@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tab View App template</title>
+<!--
+    This template can be used for simple tab view application that has tabs at the bottom to switch views, for applications like Phone app, Facebook App or Instagram app.
+--> 
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+    
+    <link rel="stylesheet" type="text/css" href="appframework/af.ui.css" />
+    <link rel="stylesheet" type="text/css" href="appframework/icons.css" />
+    <script type="text/javascript" charset="utf-8" src="appframework/appframework.ui.min.js"></script>
+
+    <!-- phantom library, needed for XDK "legacy" container api calls -->
+    <script src="intelxdk.js"></script>
+    <!-- phantom library, needed for Cordova api calls -->
+    <script src="cordova.js"></script>
+    <!-- phantom library, needed for XDK "legacy" container CORS -->
+    <script src="xhr.js"></script>
+    <!-- now to add all the other necessary javascript files -->
+    <link href='fullcalendar.css' rel='stylesheet'/>
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css"/>
+    <script src='lib/moment.min.js'></script>
+    <script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>  
+    <script src='fullcalendar.min.js'></script>
+    <script src='gcal.js'></script>
+    
+    <script>
+        jQuery.extend({
+            getValues: function(url) {
+                var result = null;
+                $.ajax({
+                    url: url,
+                    type: 'get',
+                    dataType: 'xml',
+                    async: false,
+                    success: function(data) {
+                        result = data;
+                    }
+                });
+               return result;
+            }
+        });
+        $(document).ready(function () {
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+
+                },
+                height: window.innerHeight,
+                defaultView: 'agendaDay',
+                minTime: "08:00:00",
+                googleCalendarApiKey: "AIzaSyC2o4On2bRlY1TH7Ny0g9eeRaUS3y0mMtk",
+                events: '5a44ga7q4komvff5k57s1ilr3k@group.calendar.google.com',
+
+                eventClick: function (event) {
+                  //event.backgroundColor = 'red';
+                    if($('#hidId').val() !== ""){
+                    var id = parseInt($('#hidId').val());
+                    var col = $("#hidCol").val();
+                      $('#calendar').fullCalendar('clientEvents', function(event){
+                      if(event.id == id) {
+                        event.backgroundColor = col;
+                        $('#calendar').fullCalendar('updateEvent', event);
+                      }
+                    });
+                    }
+                    $('#hidId').val(event.id);
+                    $('#hidCol').val(event.backgroundColor);
+                    event.backgroundColor = 'red';
+                    $('#title').html(event.title);
+                    $('#time').html(event.start.format('MMM D h:mm a') + " - " + event.end.format('MMM D h:mm a'));
+                    $('#location').html(event.location);
+                    $('#description').html(event.description);
+                    $('#calendar').fullCalendar('updateEvent', event);
+                },
+
+                dayClick: function(date, event, view){
+                  $('#calendar').fullCalendar('changeView', 'agendaDay');
+                  $('#calendar').fullCalendar('gotoDate', date);
+                },
+
+                loading: function (bool) {
+                    $('#loading').toggle(bool);
+                },
+            });
+        });
+
+        var json = { events: [] };
+        var data = $.getValues("http://events.cc.gatech.edu/getdata.php");
+        var nodes = $(data).find("node");
+        //console.log(data.responseXML);
+        //console.log(data["responseXML"]);
+        for (var i = 0; i < nodes.length; i++) {
+            json.events.push({
+              id: nodes[i].id,
+              title: $(nodes[i].children[0]).text(),
+              start: $(nodes[i].children[16]).text(),
+              end: $(nodes[i].children[17]).text(),
+              description: $(nodes[i].children[2]).text(),
+              location: $(nodes[i].children[31]).text(),
+              editable: false,
+              backgroundColor: "CadetBlue" //color
+            });
+        }
+        console.log(json);
+        $('#calendar').fullCalendar('addEventSource', json);
+        
+    </script>
+    
+    <script>
+        var onDeviceReady=function(){                             // called when Cordova is ready
+           if( window.Cordova && navigator.splashscreen ) {     // Cordova API detected
+               //$.ui.launch(); 
+               navigator.splashscreen.hide() ;                 // hide splash screen
+            }
+        } ;
+        document.addEventListener("deviceready", onDeviceReady, false) ;
+
+    </script>
+    
+    <script>   
+        $.ui.autoLaunch = false; 
+        $.ui.animateHeaders = false;
+                
+        $(document).ready(function(){
+            $.ui.launch();
+        });
+    </script>    
+</head>
+<body> 
+<div id="afui">
+    <input id='hidId' type='hidden'>
+    <div id="content" style=""> 
+        
+    <!--Tab View Pages-->
+        <div class="panel" title="Calendar" id="calPage" data-tab="tab1" selected="true">
+            <header>
+                <h1>Calendar</h1>
+            </header>
+            <div id='calendar'></div>
+        </div>
+        
+        <div class="panel" title="List" id="listPage" data-tab="tab2">
+            <header>
+                <h1>Event Details</h1>
+            </header>
+            <div id="information">
+                <p>
+                  <u><b>Information:</b></u>
+                </p>
+                <p id="title"></p>
+                <p id="time"></p>
+                <p id="location"></p>
+                <p id="description"></p>
+            </div>
+        </div>
+        
+        <div class="panel" title="Messages" id="contactPage" data-tab="tab3">
+            <header>
+                <h1>Messages</h1>
+            </header>
+            <p>This is view for third Tab</p>
+        </div>
+        
+    </div>
+    
+    <!--Footer with Tabs or Navigation bar -->
+    <div id="navbar">
+        <a href="#calPage" id='tab1' class="icon home" data-transition="none">Calendar</a>
+        <a href="#listPage" id='tab2' class="icon heart" data-transition="none">Events</a>
+        <a href="#contactPage" id='tab3' class="icon chat" data-transition="none">Contact?</a>
+    </div>
+
+</div>
+</body>
+</html>    
