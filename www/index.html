@@ -53,7 +53,10 @@
                 defaultView: 'agendaDay',
                 minTime: "08:00:00",
                 googleCalendarApiKey: "AIzaSyC2o4On2bRlY1TH7Ny0g9eeRaUS3y0mMtk",
-                events: '5a44ga7q4komvff5k57s1ilr3k@group.calendar.google.com',
+                eventSources: [
+                    '5a44ga7q4komvff5k57s1ilr3k@group.calendar.google.com',
+                    getJson()
+                ],
 
                 eventClick: function (event) {
                   //event.backgroundColor = 'red';
@@ -88,25 +91,27 @@
             });
         });
 
-        var json = { events: [] };
-        var data = $.getValues("http://events.cc.gatech.edu/getdata.php");
-        var nodes = $(data).find("node");
-        //console.log(data.responseXML);
-        //console.log(data["responseXML"]);
-        for (var i = 0; i < nodes.length; i++) {
-            json.events.push({
-              id: nodes[i].id,
-              title: $(nodes[i].children[0]).text(),
-              start: $(nodes[i].children[16]).text(),
-              end: $(nodes[i].children[17]).text(),
-              description: $(nodes[i].children[2]).text(),
-              location: $(nodes[i].children[31]).text(),
-              editable: false,
-              backgroundColor: "CadetBlue" //color
-            });
+        function getJson(){
+            var json = { events: [] };
+            var data = $.getValues("http://events.cc.gatech.edu/getdata.php");
+            var nodes = $(data).find("node");
+            //console.log(data.responseXML);
+            //console.log(data["responseXML"]);
+            for (var i = 0; i < nodes.length; i++) {
+                json.events.push({
+                  id: nodes[i].id,
+                  title: $(nodes[i].children[0]).text(),
+                  start: $(nodes[i].children[16]).text(),
+                  end: $(nodes[i].children[17]).text(),
+                  description: $(nodes[i].children[2]).text(),
+                  location: $(nodes[i].children[31]).text(),
+                  editable: false,
+                  backgroundColor: "CadetBlue" //color
+                });
+            }
+            console.log(json.events);
+            return json;
         }
-        console.log(json);
-        $('#calendar').fullCalendar('addEventSource', json);
         
     </script>
     
